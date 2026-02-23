@@ -1,5 +1,4 @@
-// api/download.js — Lucky Downloader Backend
-// Deploy ke Vercel: serverless function, jalan di server bukan browser
+// api/download.js — Lucky Downloader Backend (Vercel)
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,18 +10,20 @@ export default async function handler(req, res) {
 
   const { url, proxy, name } = req.query;
 
+  // ── Mode proxy: download file → stream ke browser
   if (proxy === '1' && url) {
     try {
-      const r = await fetchTimeout(url, 30000);
-      if (!r.ok) return res.status(502).json({ error: 'Upstream HTTP ' + r.status });
+      const r = await fetchTimeout(decodeURIComponent(url), 30000);
+      if (!r.ok) throw new Error('Upstream HTTP ' + r.status);
       const contentType = r.headers.get('content-type') || 'video/mp4';
-      const filename = name || 'lucky_download.mp4';
+      const filename = name ? decodeURIComponent(name) : 'lucky_download.mp4';
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-      const buf = await r.arrayBuffer();
-      return res.send(Buffer.from(buf));
+      res.setHeader('Cache-Control', 'no-store');
+      const buf = Buffer.from(await r.arrayBuffer());
+      return res.status(200).send(buf);
     } catch(e) {
-      return res.status(502).json({ error: 'Proxy gagal: ' + e.message });
+      return res.status(502).json({ ok: false, error: 'Proxy gagal: ' + e.message });
     }
   }
 
@@ -30,8 +31,9 @@ export default async function handler(req, res) {
 
   const errors = [];
 
+  // ── API 1: tikwm.com
   try {
-    const r = await fetchTimeout(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`, 10000);
+    const r = await fetchTimeout(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`, 12000);
     const json = await r.json();
     if (json.code === 0 && json.data) {
       const d = json.data;
@@ -54,8 +56,9 @@ export default async function handler(req, res) {
     errors.push('tikwm: ' + (json.msg || 'no data'));
   } catch(e) { errors.push('tikwm: ' + e.message); }
 
+  // ── API 2: tiklydown v3
   try {
-    const r = await fetchTimeout(`https://api.tiklydown.eu.org/api/download/v3?url=${encodeURIComponent(url)}`, 10000);
+    const r = await fetchTimeout(`https://api.tiklydown.eu.org/api/download/v3?url=${encodeURIComponent(url)}`, 12000);
     const json = await r.json();
     if (json.data) {
       const d = json.data;
@@ -78,8 +81,9 @@ export default async function handler(req, res) {
     errors.push('tiklydown: no data');
   } catch(e) { errors.push('tiklydown: ' + e.message); }
 
+  // ── API 3: tiklydown v1
   try {
-    const r = await fetchTimeout(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, 10000);
+    const r = await fetchTimeout(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`, 12000);
     const json = await r.json();
     if (json.data) {
       const d = json.data;
@@ -106,6 +110,11 @@ export default async function handler(req, res) {
 function fetchTimeout(url, ms) {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), ms);
-  return fetch(url, { signal: ctrl.signal }).finally(() => clearTimeout(timer));
+  return fetch(url, {
+    signal: ctrl.signal,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Linux; Android 11) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36',
+      'Referer': 'https://www.tiktok.com/',
+    }
+  }).finally(() => clearTimeout(timer));
 }
-  
