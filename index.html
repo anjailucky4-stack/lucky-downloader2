@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lucky DL">
+<meta name="theme-color" content="#fe2c55">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Lucky Downloader — TikTok Video Downloader</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #10101e;
+  --surface2: #18182a;
+  --card: #1a1a2e;
+  --red: #fe2c55;
+  --red-dim: rgba(254,44,85,0.15);
+  --cyan: #25f4ee;
+  --cyan-dim: rgba(37,244,238,0.12);
+  --gold: #fbbf24;
+  --text: #eeeef8;
+  --muted: #6060a0;
+  --border: rgba(255,255,255,0.06);
+  --border-hover: rgba(254,44,85,0.4);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── Background ── */
+.bg-layer {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden;
+}
+.bg-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.18;
+  will-change: transform;
+}
+.blob-1 { width:500px;height:500px;background:var(--red);top:-200px;right:-100px;animation:b1 14s ease-in-out infinite; }
+.blob-2 { width:400px;height:400px;background:var(--cyan);bottom:-150px;left:-100px;animation:b2 18s ease-in-out infinite; }
+.blob-3 { width:250px;height:250px;background:var(--gold);top:40%;left:40%;animation:b3 10s ease-in-out infinite; }
+
+@keyframes b1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,30px) scale(1.1)} }
+@keyframes b2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(50px,-30px) scale(1.08)} }
+@keyframes b3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,20px)} }
+
+/* grain */
+.bg-layer::after {
+  content:'';position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.04;
+}
+
+/* grid lines */
+.bg-layer::before {
+  content:'';position:absolute;inset:0;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px), linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ── Layout ── */
+.wrap {
+  position:relative;z-index:1;
+  max-width:860px;margin:0 auto;padding:0 20px;
+}
+
+/* ── Header ── */
+header {
+  padding:28px 0 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
+
+.logo {
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;
+}
+
+.logo-mark {
+  width:42px;height:42px;
+  background:linear-gradient(135deg,var(--red),#ff6b8a);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;
+  box-shadow:0 0 0 0 rgba(254,44,85,0.5);
+  animation:logoPulse 2.5s infinite;
+}
+@keyframes logoPulse {
+  0%,100%{box-shadow:0 0 0 0 rgba(254,44,85,0.5)}
+  50%{box-shadow:0 0 0 10px rgba(254,44,85,0)}
+}
+
+.logo-name {
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
+}
+.logo-name em {
+  font-style:normal;
+  background:linear-gradient(90deg,var(--red),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+
+.nav-badge {
+  display:flex;align-items:center;gap:6px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:100px;padding:6px 14px;
+  font-size:12px;color:var(--muted);font-weight:500;
+}
+.nav-badge .live-dot {
+  width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);
+  animation:blink 1.4s infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* ── Hero ── */
+.hero {
+  text-align:center;
+  padding:72px 0 48px;
+}
+.hero-chip {
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:100px;padding:8px 20px;
+  font-size:12.5px;color:var(--muted);font-weight:500;
+  margin-bottom:28px;
+  animation:fadeIn 0.5s ease both;
+}
+.hero-chip span { color:var(--cyan); }
+
+.hero h1 {
+  font-family:'Syne',sans-serif;
+  font-size:clamp(32px,6.5vw,66px);
+  font-weight:900;line-height:1.06;
+  margin-bottom:18px;
+  animation:fadeIn 0.5s 0.08s ease both;
+}
+.hero h1 .accent {
+  background:linear-gradient(100deg,var(--red) 0%,var(--gold) 50%,var(--cyan) 100%);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:gradFlow 4s linear infinite, fadeIn 0.5s 0.08s ease both;
+}
+@keyframes gradFlow{0%{background-position:0%}100%{background-position:200%}}
+
+.hero p {
+  font-size:16px;color:var(--muted);font-weight:300;
+  max-width:440px;margin:0 auto 44px;line-height:1.75;
+  animation:fadeIn 0.5s 0.15s ease both;
+}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+/* ── Main Card ── */
+.main-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:28px;padding:32px;
+  box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  animation:fadeIn 0.5s 0.22s ease both;
+  transition:border-color 0.3s;
+}
+.main-card.processing { border-color:rgba(254,44,85,0.35); }
+.main-card.success    { border-color:rgba(37,244,238,0.35); }
+
+.field-label {
+  font-size:11.5px;font-weight:600;letter-spacing:0.9px;
+  text-transform:uppercase;color:var(--muted);
+  margin-bottom:10px;
+}
+
+.input-row {
+  display:flex;gap:10px;
+  align-items:stretch;
+}
+
+.url-box {
+  flex:1;position:relative;
+}
+
+.url-input {
+  width:100%;height:56px;
+  background:var(--bg);
+  border:1.5px solid var(--border);
+  border-radius:14px;
+  padding:0 48px 0 18px;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:14.5px;color:var(--text);
+  outline:none;transition:border-color 0.25s, box-shadow 0.25s;
+}
+.url-input::placeholder{color:var(--muted)}
+.url-input:focus {
+  border-color:var(--red);
+  box-shadow:0 0 0 4px rgba(254,44,85,0.12);
+}
+.url-input.valid {
+  border-color:var(--cyan);
+  box-shadow:0 0 0 4px rgba(37,244,238,0.1);
+}
+
+.clear-btn {
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--muted);
+  font-size:18px;cursor:pointer;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+  line-height:1;
+}
+.clear-btn.visible { opacity:1;pointer-events:auto; }
+
+.go-btn {
+  height:56px;padding:0 26px;
+  background:linear-gradient(135deg,var(--red),#c8002e);
+  border:none;border-radius:14px;
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  color:#fff;cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 24px rgba(254,44,85,0.4);
+  transition:transform 0.2s,box-shadow 0.2s,opacity 0.2s;
+  position:relative;overflow:hidden;
+}
+.go-btn::after {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);
+  opacity:0;transition:opacity 0.2s;
+}
+.go-btn:hover:not(:disabled) { transform:translateY(-2px);box-shadow:0 12px 32px rgba(254,44,85,0.55); }
+.go-btn:hover:not(:disabled)::after { opacity:1; }
+.go-btn:active:not(:disabled) { transform:translateY(0); }
+.go-btn:disabled { opacity:0.55;cursor:not-allowed; }
+.go-btn .btn-ic { font-size:17px; }
+
+/* ── Progress Bar ── */
+.progress-wrap {
+  margin-top:16px;height:3px;background:var(--border);
+  border-radius:99px;overflow:hidden;
+  opacity:0;transition:opacity 0.3s;
+}
+.progress-wrap.visible { opacity:1; }
+.progress-bar {
+  height:100%;width:0%;
+  background:linear-gradient(90deg,var(--red),var(--gold),var(--cyan));
+  border-radius:99px;
+  transition:width 0.4s ease;
+}
+
+/* ── Status ── */
+.status-line {
+  margin-top:14px;
+  font-size:13px;color:var(--muted);
+  display:flex;align-items:center;gap:8px;
+  min-height:22px;
+}
+.status-line .s-icon { font-size:15px; }
+.status-line.err { color:#ff7a9a; }
+.status-line.ok  { color:var(--cyan); }
+
+/* ── Result ── */
+.result-section {
+  margin-top:20px;
+  display:none;
+}
+.result-section.show { display:block; }
+
+.result-divider {
+  height:1px;background:var(--border);
+  margin-bottom:20px;
+}
+
+.video-preview {
+  display:flex;gap:14px;align-items:flex-start;
+  margin-bottom:20px;
+}
+.thumb-wrap {
+  width:88px;height:88px;flex-shrink:0;
+  border-radius:14px;overflow:hidden;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;
+}
+.thumb-wrap img { width:100%;height:100%;object-fit:cover; }
+
+.video-info { flex:1;min-width:0; }
+.v-title {
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+  margin-bottom:8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.v-stats {
+  display:flex;gap:14px;flex-wrap:wrap;
+  font-size:12.5px;color:var(--muted);
+}
+.v-stats span { display:flex;align-items:center;gap:5px; }
+
+/* ── Download Buttons ── */
+.dl-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.dl-btn {
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface2);
+  border:1.5px solid var(--border);
+  border-radius:16px;padding:16px 18px;
+  cursor:pointer;text-decoration:none;color:var(--text);
+  transition:all 0.25s;
+  position:relative;overflow:hidden;
+}
+.dl-btn::before {
+  content:'';position:absolute;inset:0;
+  opacity:0;transition:opacity 0.25s;
+}
+.dl-btn.type-nowm::before { background:var(--red-dim); }
+.dl-btn.type-wm::before   { background:var(--cyan-dim); }
+.dl-btn.type-mp3::before  { background:rgba(251,191,36,0.1); }
+.dl-btn.type-img::before  { background:rgba(167,139,250,0.1); }
+
+.dl-btn:hover { border-color:var(--red);transform:translateY(-2px); }
+.dl-btn:hover::before { opacity:1; }
+.dl-btn:active { transform:translateY(0); }
+.dl-btn.disabled { opacity:0.35;pointer-events:none; }
+
+.dl-left { display:flex;align-items:center;gap:12px;z-index:1; }
+.dl-ico {
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.dl-ico.red  { background:var(--red-dim); }
+.dl-ico.cyan { background:var(--cyan-dim); }
+.dl-ico.gold { background:rgba(251,191,36,0.12); }
+.dl-ico.purp { background:rgba(167,139,250,0.12); }
+
+.dl-title { font-family:'Syne',sans-serif;font-weight:700;font-size:14px;line-height:1.3; }
+.dl-sub   { font-size:11.5px;color:var(--muted);margin-top:2px; }
+
+.dl-arrow {
+  width:30px;height:30px;flex-shrink:0;
+  border-radius:8px;background:var(--red);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;z-index:1;
+  transition:transform 0.2s, background 0.2s;
+}
+.dl-btn:hover .dl-arrow { transform:translateY(3px); }
+
+.dl-btn.downloading .dl-arrow {
+  animation:arrowBounce 0.6s infinite;
+}
+@keyframes arrowBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+
+/* ── How To Use ── */
+.how-section {
+  margin-top:48px;
+  animation:fadeIn 0.5s 0.4s ease both;
+}
+.section-title {
+  font-family:'Syne',sans-serif;font-weight:800;font-size:20px;
+  text-align:center;margin-bottom:24px;
+}
+.section-title span {
+  background:linear-gradient(90deg,var(--red),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.steps { display:grid;grid-template-columns:repeat(3,1fr);gap:14px; }
+.step-card {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:20px;padding:22px;
+  transition:border-color 0.25s,transform 0.25s;
+}
+.step-card:hover { border-color:rgba(254,44,85,0.3);transform:translateY(-3px); }
+.step-num {
+  font-family:'Syne',sans-serif;font-size:28px;font-weight:900;
+  background:linear-gradient(135deg,var(--red),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1;margin-bottom:10px;
+}
+.step-title { font-weight:600;font-size:14px;margin-bottom:6px; }
+.step-desc  { font-size:13px;color:var(--muted);line-height:1.65; }
+
+/* ── Features ── */
+.feat-grid {
+  margin-top:16px;
+  display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+  animation:fadeIn 0.5s 0.5s ease both;
+}
+.feat-item {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:18px;
+  display:flex;align-items:flex-start;gap:12px;
+  transition:border-color 0.25s;
+}
+.feat-item:hover { border-color:var(--border-hover); }
+.feat-ic { font-size:22px;line-height:1; }
+.feat-title { font-weight:600;font-size:14px;margin-bottom:3px; }
+.feat-desc  { font-size:12.5px;color:var(--muted);line-height:1.6; }
+
+/* ── Footer ── */
+footer {
+  margin-top:56px;padding:24px 0 32px;
+  border-top:1px solid var(--border);
+  text-align:center;
+  font-size:13px;color:var(--muted);
+}
+footer strong { color:var(--red); }
+
+/* ── Toast ── */
+.toast {
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:100px;padding:12px 24px;
+  font-size:13.5px;font-weight:500;
+  box-shadow:0 16px 48px rgba(0,0,0,0.5);
+  transition:transform 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+  z-index:1000;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show { transform:translateX(-50%) translateY(0); }
+.toast.toast-ok  { border-color:rgba(37,244,238,0.4);  color:var(--cyan); }
+.toast.toast-err { border-color:rgba(254,44,85,0.4);   color:#ff8fa0; }
+
+/* ── Ad Overlay ── */
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.ad-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ad-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 0;
+  width: 340px;
+  max-width: 90vw;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  overflow: hidden;
+  transform: scale(0.88) translateY(20px);
+  transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  position: relative;
+}
+.ad-overlay.show .ad-box {
+  transform: scale(1) translateY(0);
+}
+.ad-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.ad-label {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.ad-close-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 50%;
+  width: 26px; height: 26px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.ad-close-btn:hover { background: rgba(254,44,85,0.2); color: var(--red); }
+.ad-countdown {
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-right: 6px;
+}
+.ad-body {
+  padding: 20px;
+}
+.ad-sponsor-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ad-sponsor-logo {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.ad-sponsor-info { flex: 1; min-width: 0; }
+.ad-sponsor-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 2px;
+}
+.ad-sponsor-tag {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.ad-headline {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+.ad-desc {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.ad-cta {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.ad-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+.ad-cta.shopee { background: linear-gradient(135deg,#ee4d2d,#ff7337); color: #fff; }
+.ad-cta.tokopedia { background: linear-gradient(135deg,#03AC0E,#00880a); color: #fff; }
+
+@media(max-width:600px){
+  .input-row  { flex-direction:column; }
+  .go-btn     { height:48px;justify-content:center; }
+  .dl-grid    { grid-template-columns:1fr; }
+  .steps      { grid-template-columns:1fr; }
+  .feat-grid  { grid-template-columns:1fr; }
+  .video-preview { flex-direction:column; }
+  header { flex-direction:column;gap:12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="bg-blob blob-1"></div>
+  <div class="bg-blob blob-2"></div>
+  <div class="bg-blob blob-3"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header>
+    <a class="logo" href="#">
+      <div class="logo-mark">🍀</div>
+      <div class="logo-name"><em>Lucky</em> Downloader</div>
+    </a>
+    <div class="nav-badge">
+      <span class="live-dot"></span>
+      Online & Ready
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-chip">🎬 <span>Tanpa watermark</span> · Gratis selamanya</div>
+    <h1>Download TikTok<br><span class="accent">Sekali Klik, Langsung Jadi</span></h1>
+    <p>Paste link TikTok dan video akan otomatis diproses. Pilih format & unduh — semua gratis, tanpa watermark.</p>
+  </section>
+
+  <!-- Main Card -->
+  <div class="main-card" id="mainCard">
+    <div class="field-label">🔗 Link Video TikTok</div>
+
+    <div class="input-row">
+      <div class="url-box">
+        <input
+          type="text"
+          class="url-input"
+          id="urlInput"
+          placeholder="Paste https://www.tiktok.com/@user/video/..."
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button class="clear-btn" id="clearBtn" onclick="clearInput()" title="Clear">✕</button>
+      </div>
+      <button class="go-btn" id="goBtn" onclick="triggerFetch()">
+        <span class="btn-ic">⬇</span> Download
+      </button>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <!-- Status -->
+    <div class="status-line" id="statusLine">
+      <span class="s-icon">💡</span>
+      <span>Paste link TikTok atau tekan <kbd style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;font-size:11px;font-family:monospace">Ctrl+V</kbd> di mana saja</span>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="result-divider"></div>
+
+      <div class="video-preview">
+        <div class="thumb-wrap" id="thumbWrap">🎵</div>
+        <div class="video-info">
+          <div class="v-title" id="vTitle">—</div>
+          <div class="v-stats" id="vStats"></div>
+        </div>
+      </div>
+
+      <div class="dl-grid" id="dlGrid">
+        <!-- filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- How to Use -->
+  <div class="how-section">
+    <div class="section-title">Cara <span>Pakai</span></div>
+    <div class="steps">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">Copy Link TikTok</div>
+        <div class="step-desc">Buka TikTok, tap Share → Copy Link pada video yang ingin kamu unduh.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">Paste & Proses</div>
+        <div class="step-desc">Paste link ke kotak input di atas, atau <kbd style="font-family:monospace;background:var(--surface2);padding:1px 5px;border-radius:4px;font-size:11px">Ctrl+V</kbd> di mana saja — otomatis terdeteksi!</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">Pilih & Download</div>
+        <div class="step-desc">Pilih format: Video HD, Tanpa Watermark, atau MP3 Audio. Klik — langsung terunduh!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="feat-grid" style="margin-top:48px">
+    <div class="feat-item">
+      <span class="feat-ic">⚡</span>
+      <div><div class="feat-title">Download Instan</div><div class="feat-desc">Proses kurang dari 3 detik. Tidak ada antrian, tidak ada iklan menghalangi.</div></div>
+    </div>
+    <div class="feat-item">
+      <span class="feat-ic">🚫</span>
+      <div><div class="feat-title">Tanpa Watermark</div><div class="feat-desc">Video bersih tanpa logo TikTok. Siap share ke Instagram, YouTube, WhatsApp.</div></div>
+    </div>
+    <div class="feat-item">
+      <span class="feat-ic">🎵</span>
+      <div><div class="feat-title">Extract Audio MP3</div><div class="feat-desc">Ambil musiknya saja dalam format MP3 kualitas tinggi.</div></div>
+    </div>
+    <div class="feat-item">
+      <span class="feat-ic">🔒</span>
+      <div><div class="feat-title">Privat & Aman</div><div class="feat-desc">Tidak menyimpan data, tidak perlu login, tidak ada jejak aktivitas.</div></div>
+    </div>
+    <div class="feat-item">
+      <span class="feat-ic">📱</span>
+      <div><div class="feat-title">Semua Perangkat</div><div class="feat-desc">Berjalan sempurna di HP, tablet, dan komputer. Tidak perlu install apapun.</div></div>
+    </div>
+    <div class="feat-item">
+      <span class="feat-ic">🌐</span>
+      <div><div class="feat-title">Auto Detect Paste</div><div class="feat-desc">Deteksi otomatis ketika kamu paste link TikTok — langsung diproses tanpa klik!</div></div>
+    </div>
+  </div>
+
+  <footer>
+    Made with ❤️ oleh <strong>Lucky Downloader</strong> &nbsp;·&nbsp; Tidak berafiliasi dengan TikTok Inc.<br>
+    <span style="font-size:11.5px;margin-top:6px;display:block">Gunakan hanya untuk konten milik sendiri atau yang memiliki izin.</span>
+  </footer>
+
+</div>
+
+<!-- Ad Overlay -->
+<div class="ad-overlay" id="adOverlay">
+  <div class="ad-box" id="adBox">
+    <div class="ad-top-bar">
+      <span class="ad-label">🛍️ Iklan Sponsor</span>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="ad-countdown" id="adCountdown"></span>
+        <button class="ad-close-btn" id="adCloseBtn" onclick="closeAd()">✕</button>
+      </div>
+    </div>
+    <div class="ad-body" id="adBody">
+      <!-- filled by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+
+<div class="toast" id="toast"></div>
+
+<!-- Hidden download anchor -->
+<a id="dlAnchor" style="display:none"></a>
+
+<script>
+/* ════════════════════════════════════════════
+   LUCKY DOWNLOADER — Frontend
+   Fetch ke backend sendiri /api/download
+   ════════════════════════════════════════════ */
+
+const state = { url: '', loading: false, data: null };
+
+const $ = id => document.getElementById(id);
+const urlInput  = $('urlInput');
+const clearBtn  = $('clearBtn');
+const goBtn     = $('goBtn');
+const mainCard  = $('mainCard');
+const progressWrap = $('progressWrap');
+const progressBar  = $('progressBar');
+const statusLine   = $('statusLine');
+const resultSec    = $('resultSection');
+const thumbWrap    = $('thumbWrap');
+const vTitle       = $('vTitle');
+const vStats       = $('vStats');
+const dlGrid       = $('dlGrid');
+const toast        = $('toast');
+const dlAnchor     = $('dlAnchor');
+
+/* ── Validasi URL TikTok ── */
+function isTikTokUrl(str) {
+  return /tiktok\.com\/@.+\/video\/\d+/.test(str) ||
+         /tiktok\.com\/t\//.test(str) ||
+         /vm\.tiktok\.com\//.test(str) ||
+         /vt\.tiktok\.com\//.test(str);
+}
+
+/* ── Format angka ── */
+function fmt(n) {
+  if (!n || isNaN(n)) return '—';
+  if (n >= 1_000_000) return (n/1_000_000).toFixed(1)+'M';
+  if (n >= 1_000)     return (n/1_000).toFixed(1)+'K';
+  return String(n);
+}
+
+/* ── Input events ── */
+urlInput.addEventListener('input', () => {
+  const v = urlInput.value.trim();
+  clearBtn.classList.toggle('visible', v.length > 0);
+  if (isTikTokUrl(v)) {
+    urlInput.classList.add('valid');
+    urlInput.classList.remove('error');
+  } else {
+    urlInput.classList.remove('valid');
+  }
+});
+
+urlInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') triggerFetch();
+});
+
+document.addEventListener('paste', e => {
+  const text = (e.clipboardData || window.clipboardData).getData('text');
+  if (isTikTokUrl(text)) {
+    urlInput.value = text;
+    urlInput.classList.add('valid');
+    clearBtn.classList.add('visible');
+    triggerFetch();
+  }
+});
+
+urlInput.addEventListener('focus', async () => {
+  try {
+    if (navigator.clipboard?.readText) {
+      const text = await navigator.clipboard.readText();
+      if (isTikTokUrl(text) && !urlInput.value) {
+        urlInput.value = text;
+        urlInput.classList.add('valid');
+        clearBtn.classList.add('visible');
+        showToast('📋 Link TikTok terdeteksi dari clipboard!', 'ok');
+      }
+    }
+  } catch(e) {}
+});
+
+function clearInput() {
+  urlInput.value = '';
+  urlInput.classList.remove('valid','error');
+  clearBtn.classList.remove('visible');
+  hideResult();
+  setStatus('💡', 'Paste link TikTok atau tekan Ctrl+V di mana saja');
+  urlInput.focus();
+}
+
+/* ── Status ── */
+function setStatus(icon, msg, type='') {
+  statusLine.className = 'status-line' + (type ? ' '+type : '');
+  statusLine.innerHTML = `<span class="s-icon">${icon}</span><span>${msg}</span>`;
+}
+
+/* ── Progress ── */
+let progressTimer;
+function startProgress() {
+  progressWrap.classList.add('visible');
+  progressBar.style.width = '0%';
+  let p = 0;
+  progressTimer = setInterval(() => {
+    p += Math.random() * 15;
+    if (p > 85) p = 85;
+    progressBar.style.width = p + '%';
+  }, 250);
+}
+function finishProgress(ok=true) {
+  clearInterval(progressTimer);
+  progressBar.style.width = ok ? '100%' : '40%';
+  progressBar.style.background = ok
+    ? 'linear-gradient(90deg,var(--red),var(--gold),var(--cyan))'
+    : 'var(--red)';
+  setTimeout(() => {
+    progressWrap.classList.remove('visible');
+    progressBar.style.width = '0%';
+    progressBar.style.background = '';
+  }, 700);
+}
+
+function hideResult() {
+  resultSec.classList.remove('show');
+  mainCard.classList.remove('processing','success');
+  state.data = null;
+}
+
+/* ── Main fetch — panggil backend sendiri ── */
+async function triggerFetch() {
+  const url = urlInput.value.trim();
+  if (!url) { urlInput.focus(); return; }
+
+  if (!isTikTokUrl(url)) {
+    setStatus('⚠️', 'Link tidak valid! Contoh: https://www.tiktok.com/@user/video/123...', 'err');
+    urlInput.classList.add('error');
+    showToast('⚠️ URL TikTok tidak valid', 'err');
+    return;
+  }
+
+  if (state.loading) return;
+  state.loading = true;
+  state.url = url;
+
+  goBtn.disabled = true;
+  goBtn.innerHTML = `<span style="font-size:15px">⏳</span> Proses...`;
+  mainCard.classList.add('processing');
+  mainCard.classList.remove('success');
+  hideResult();
+  startProgress();
+  setStatus('🔄', 'Mengambil data video...');
+
+  try {
+    // Panggil backend kita sendiri — tidak ada masalah CORS!
+    const apiUrl = `/api/download?url=${encodeURIComponent(url)}`;
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+
+    if (!data.ok) throw new Error(data.error || 'Server error');
+
+    finishProgress(true);
+    state.data = data;
+    renderResult(data);
+    mainCard.classList.remove('processing');
+    mainCard.classList.add('success');
+    setStatus('✅', 'Video berhasil diproses! Pilih format download di bawah.', 'ok');
+    showToast('✅ Video siap didownload!', 'ok');
+    resultSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch(err) {
+    finishProgress(false);
+    mainCard.classList.remove('processing');
+    setStatus('❌', `Gagal: ${err.message}`, 'err');
+    showToast('❌ ' + err.message, 'err');
+  } finally {
+    state.loading = false;
+    goBtn.disabled = false;
+    goBtn.innerHTML = `<span class="btn-ic">⬇</span> Download`;
+  }
+}
+
+/* ── Render result ── */
+function renderResult(d) {
+  // Thumbnail
+  if (d.cover) {
+    thumbWrap.innerHTML = `<img src="${d.cover}" alt="thumb" onerror="this.parentElement.innerHTML='🎵'">`;
+  } else {
+    thumbWrap.innerHTML = '🎵';
+  }
+
+  // Judul
+  vTitle.textContent = (d.author ? `@${d.author} · ` : '') + (d.title || 'TikTok Video');
+
+  // Stats
+  vStats.innerHTML = [
+    d.likes    ? `<span>❤️ ${fmt(d.likes)}</span>` : '',
+    d.comments ? `<span>💬 ${fmt(d.comments)}</span>` : '',
+    d.shares   ? `<span>📤 ${fmt(d.shares)}</span>` : '',
+    d.music    ? `<span>🎵 ${d.music.substring(0,28)}${d.music.length>28?'…':''}</span>` : '',
+  ].filter(Boolean).join('');
+
+  // Tombol download
+  const buttons = [
+    {
+      type:'nowm', ico:'red', icon:'🎬',
+      label:'Video HD (No WM)', sub:'Tanpa watermark · Terbaik',
+      url: d.nowm || d.wm,
+      filename: 'lucky_tiktok_nowatermark.mp4',
+    },
+    {
+      type:'wm', ico:'cyan', icon:'📱',
+      label:'Video Original', sub:'Dengan watermark TikTok',
+      url: d.wm || d.nowm,
+      filename: 'lucky_tiktok.mp4',
+    },
+    {
+      type:'mp3', ico:'gold', icon:'🎵',
+      label:'Audio MP3', sub:'Extract musik · Tanpa video',
+      url: d.audio,
+      filename: 'lucky_audio.mp3',
+    },
+    {
+      type:'img', ico:'purp', icon:'🖼️',
+      label:'Slideshow / Foto', sub: d.images?.length ? `${d.images.length} gambar` : 'Tidak tersedia',
+      url: d.images?.length ? d.images[0] : '',
+      filename: 'lucky_image.jpg',
+      disabled: !d.images?.length,
+    },
+  ];
+
+  dlGrid.innerHTML = buttons.map(b => `
+    <button
+      class="dl-btn type-${b.type}${b.disabled ? ' disabled' : ''}"
+      data-url="${b.url || ''}"
+      data-name="${b.filename}"
+      onclick="startDownload(this)"
+      ${b.disabled ? 'disabled' : ''}
+    >
+      <div class="dl-left">
+        <div class="dl-ico ${b.ico}">${b.icon}</div>
+        <div>
+          <div class="dl-title">${b.label}</div>
+          <div class="dl-sub">${b.sub}</div>
+        </div>
+      </div>
+      <div class="dl-arrow">↓</div>
+    </button>
+  `).join('');
+
+  resultSec.classList.add('show');
+}
+
+/* ── Download handler ── */
+async function startDownload(btn) {
+  const url      = btn.dataset.url;
+  const filename = btn.dataset.name;
+
+  if (!url) {
+    showToast('⚠️ URL tidak tersedia untuk format ini', 'err');
+    return;
+  }
+
+  btn.classList.add('downloading');
+  showToast('⬇️ Memulai download...', 'ok');
+
+  try {
+    // Download via backend proxy — tidak kena CORS
+    const proxyUrl = `/api/download?proxy=1&url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    if (blob.size < 1000) throw new Error('File kosong');
+    const blobUrl = URL.createObjectURL(blob);
+    dlAnchor.href = blobUrl;
+    dlAnchor.download = filename;
+    dlAnchor.click();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+    showToast('✅ Download berhasil! Cek folder unduhan kamu.', 'ok');
+  } catch(e) {
+    // Fallback: buka langsung
+    window.open(url, '_blank');
+    showToast('📂 Terbuka di tab baru — klik tahan lalu Simpan Video', 'ok');
+  } finally {
+    btn.classList.remove('downloading');
+  }
+}
+
+/* ── Toast ── */
+let toastTimer;
+function showToast(msg, type='ok') {
+  clearTimeout(toastTimer);
+  toast.textContent = msg;
+  toast.className = `toast toast-${type} show`;
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+/* ════════════════════════════════════════════
+   AD SYSTEM
+   ════════════════════════════════════════════ */
+const ADS = [
+  {
+    logo:'🛍️', logoColor:'linear-gradient(135deg,#ee4d2d,#ff7337)',
+    name:'Shopee', tag:'Marketplace #1 di Asia Tenggara',
+    headline:'🔥 Flash Sale Hari Ini! Diskon s.d. 90%',
+    desc:'Belanja kebutuhan sehari-hari dengan harga murah. Gratis ongkir ke seluruh Indonesia!',
+    ctaText:'Belanja di Shopee →', ctaClass:'shopee', url:'https://shopee.co.id',
+  },
+  {
+    logo:'🟢', logoColor:'linear-gradient(135deg,#03AC0E,#00880a)',
+    name:'Tokopedia', tag:'Toko Online Terpercaya',
+    headline:'💚 Promo Spesial — Voucher Cashback 25%',
+    desc:'Temukan jutaan produk dengan jaminan resmi. Bayar pakai Gopay makin hemat!',
+    ctaText:'Kunjungi Tokopedia →', ctaClass:'tokopedia', url:'https://tokopedia.com',
+  },
+];
+
+let adIdx=0, adCountdownInterval;
+const adOverlay   = $('adOverlay');
+const adCloseBtn  = $('adCloseBtn');
+const adCountdown = $('adCountdown');
+const adBody      = $('adBody');
+
+function showAd() {
+  const ad = ADS[adIdx++ % ADS.length];
+  adBody.innerHTML = `
+    <div class="ad-sponsor-row">
+      <div class="ad-sponsor-logo" style="background:${ad.logoColor}">${ad.logo}</div>
+      <div class="ad-sponsor-info">
+        <div class="ad-sponsor-name">${ad.name}</div>
+        <div class="ad-sponsor-tag">${ad.tag}</div>
+      </div>
+    </div>
+    <div class="ad-headline">${ad.headline}</div>
+    <div class="ad-desc">${ad.desc}</div>
+    <a href="${ad.url}" target="_blank" rel="noopener" class="ad-cta ${ad.ctaClass}">${ad.ctaText}</a>
+  `;
+  adCloseBtn.style.opacity = '0.35';
+  adCloseBtn.style.pointerEvents = 'none';
+  let secs = 4;
+  adCountdown.textContent = `Tutup dalam ${secs}s`;
+  adCountdownInterval = setInterval(() => {
+    secs--;
+    if (secs <= 0) {
+      clearInterval(adCountdownInterval);
+      adCountdown.textContent = '';
+      adCloseBtn.style.opacity = '1';
+      adCloseBtn.style.pointerEvents = 'auto';
+    } else {
+      adCountdown.textContent = `Tutup dalam ${secs}s`;
+    }
+  }, 1000);
+  adOverlay.classList.add('show');
+}
+
+function closeAd() {
+  adOverlay.classList.remove('show');
+  clearInterval(adCountdownInterval);
+  setTimeout(showAd, 3 * 60 * 1000);
+}
+
+setTimeout(showAd, 12000);
+
+/* ── Init ── */
+urlInput.focus();
+
+/* ── Register Service Worker (PWA) ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(() => console.log('SW registered'))
+      .catch(e => console.warn('SW failed:', e));
+  });
+}
+
+/* ── PWA Install prompt ── */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Tampilkan banner install setelah 5 detik
+  setTimeout(() => {
+    if (deferredPrompt) showInstallBanner();
+  }, 5000);
+});
+
+function showInstallBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = `
+    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:#1a1a2e;border:1px solid rgba(254,44,85,0.4);
+    border-radius:100px;padding:12px 20px;
+    display:flex;align-items:center;gap:12px;
+    font-size:13.5px;font-weight:500;color:#eeeef8;
+    box-shadow:0 16px 48px rgba(0,0,0,0.6);
+    z-index:9998;white-space:nowrap;
+    animation:fadeIn 0.4s ease;
+  `;
+  banner.innerHTML = \`
+    <span>🍀 Install Lucky Downloader</span>
+    <button onclick="installPWA()" style="background:#fe2c55;border:none;border-radius:100px;padding:6px 16px;color:#fff;font-weight:700;cursor:pointer;font-size:13px">Install</button>
+    <button onclick="this.parentElement.remove()" style="background:none;border:none;color:#6060a0;cursor:pointer;font-size:16px">✕</button>
+  \`;
+  document.body.appendChild(banner);
+}
+
+async function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBanner')?.remove();
+  if (outcome === 'accepted') showToast('✅ Lucky Downloader berhasil diinstall!', 'ok');
+}
+</script>
+</body>
+</html>

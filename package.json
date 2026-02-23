@@ -1,0 +1,9 @@
+{
+  "name": "lucky-downloader",
+  "version": "1.0.0",
+  "description": "Lucky TikTok Downloader",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  }
+}
